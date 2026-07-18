@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from 'react';
 import ReactFlow, { type Node, type Edge } from 'reactflow';
 import type { ServiceDefinition } from '@/data/services';
 import { useProgress } from '@/hooks/useProgress';
-import { buildRoadmapGraph } from '@/lib/roadmap-layout';
+import { buildRoadmapGraph, type RoadmapNodePosition } from '@/lib/roadmap-layout';
 import { RoadmapNode } from './RoadmapNode';
 import { SidePanel } from '../SidePanel';
 import { ProgressBar } from '../ProgressBar';
@@ -13,9 +13,9 @@ import { ProgressBar } from '../ProgressBar';
 const nodeTypes = { roadmap: RoadmapNode };
 
 export function RoadmapCanvas({ service }: { service: ServiceDefinition }) {
-  const { nodes: rawNodes, edges: rawEdges, height } = useMemo(
-    () => buildRoadmapGraph(service.steps),
-    [service.steps],
+  const { nodes: rawNodes, edges: rawEdges, height, width } = useMemo(
+    () => buildRoadmapGraph(service.name, service.steps),
+    [service.name, service.steps],
   );
 
   const stepIds = useMemo(() => service.steps.map((step) => step.id), [service.steps]);
@@ -53,11 +53,25 @@ export function RoadmapCanvas({ service }: { service: ServiceDefinition }) {
     [rawEdges],
   );
 
-  const onNodeClick = useCallback((_event: unknown, node: Node) => {
-    setActiveNodeId(node.id);
-  }, []);
+  const onNodeClick = useCallback(
+    (_event: unknown, node: Node) => {
+      const clicked = rawNodes.find((n: RoadmapNodePosition) => n.id === node.id);
+      if (clicked && (clicked.data.variant === 'trunk' || clicked.data.variant === 'branch')) {
+        setActiveNodeId(node.id);
+      }
+    },
+    [rawNodes],
+  );
 
-  const activeContent = rawNodes.find((node) => node.id === activeNodeId)?.data ?? null;
+  const clickableNodes = useMemo(
+    () =>
+      rawNodes.filter(
+        (node: RoadmapNodePosition) => node.data.variant === 'trunk' || node.data.variant === 'branch',
+      ),
+    [rawNodes],
+  );
+
+  const activeContent = rawNodes.find((node: RoadmapNodePosition) => node.id === activeNodeId)?.data ?? null;
   const activeIsTrunk = activeContent?.variant === 'trunk';
 
   return (
@@ -67,26 +81,28 @@ export function RoadmapCanvas({ service }: { service: ServiceDefinition }) {
         <ProgressBar reviewedCount={reviewedCount} total={total} accent={service.accent} />
       </div>
 
-      <div
-        className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-[#f8fafc]"
-        style={{ height }}
-      >
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodeTypes={nodeTypes}
-          onNodeClick={onNodeClick}
-          nodesDraggable={false}
-          nodesConnectable={false}
-          elementsSelectable={false}
-          panOnDrag={false}
-          zoomOnScroll={false}
-          zoomOnPinch={false}
-          zoomOnDoubleClick={false}
-          proOptions={{ hideAttribution: true }}
-          fitView
-          fitViewOptions={{ padding: 0.15 }}
-        />
+      <div className="w-full overflow-x-auto">
+        <div style={{ height, width, minWidth: '100%' }}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            nodeTypes={nodeTypes}
+            onNodeClick={onNodeClick}
+            nodesDraggable={false}
+            nodesConnectable={false}
+            elementsSelectable={false}
+            panOnDrag={false}
+            panOnScroll={false}
+            zoomOnScroll={false}
+            zoomOnPinch={false}
+            zoomOnDoubleClick={false}
+            preventScrolling={false}
+            proOptions={{ hideAttribution: true }}
+            defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+            minZoom={1}
+            maxZoom={1}
+          />
+        </div>
       </div>
 
       {activeContent && (
@@ -97,8 +113,8 @@ export function RoadmapCanvas({ service }: { service: ServiceDefinition }) {
             explanation: activeContent.explanation,
             status: activeContent.contentStatus,
           }}
-          index={rawNodes.findIndex((node) => node.id === activeNodeId)}
-          total={rawNodes.length}
+          index={clickableNodes.findIndex((node: RoadmapNodePosition) => node.id === activeNodeId)}
+          total={clickableNodes.length}
           accent={service.accent}
           isReviewed={activeIsTrunk && isReviewed(activeContent.id)}
           showReviewToggle={activeIsTrunk}

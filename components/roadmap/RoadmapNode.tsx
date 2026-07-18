@@ -23,17 +23,40 @@ interface RoadmapNodeVisualData {
   variant: NodeVariant;
   role?: StepRole;
   isReviewed?: boolean;
+  calloutButtonText?: string;
 }
 
 export function RoadmapNode({ data }: NodeProps<RoadmapNodeVisualData>) {
+  if (data.variant === 'label') {
+    return (
+      <div className="relative px-2 text-lg font-bold text-slate-800">
+        <Handle type="source" position={Position.Bottom} id="bottom" style={hiddenHandle} />
+        {data.label}
+      </div>
+    );
+  }
+
+  if (data.variant === 'callout') {
+    return (
+      <div className="w-64 rounded-lg border border-slate-200 bg-white p-4 text-sm leading-relaxed text-slate-600 shadow-sm">
+        <p>{data.label}</p>
+        {data.calloutButtonText && (
+          <span className="mt-3 block rounded-md bg-slate-100 px-3 py-2 text-center text-sm font-medium text-slate-500">
+            {data.calloutButtonText}
+          </span>
+        )}
+      </div>
+    );
+  }
+
   const isTrunk = data.variant === 'trunk';
   const roleStyle = data.role ? ROLE_STYLES[data.role] : null;
 
   return (
     <div
       className={cn(
-        'relative flex items-center justify-center rounded-md border-2 border-black px-4 py-2.5 text-center text-sm font-semibold shadow-sm',
-        isTrunk ? 'min-w-[200px]' : 'min-w-[220px] border-dashed bg-white text-[13px] font-medium text-slate-500',
+        'relative flex items-center justify-center whitespace-normal break-words rounded-md border-2 border-black px-3 py-2 text-center text-[13px] font-semibold leading-snug shadow-sm',
+        isTrunk ? 'w-[210px]' : 'w-[190px] border-dashed bg-white text-[12px] font-medium text-slate-500',
       )}
       style={isTrunk && roleStyle ? { backgroundColor: roleStyle.bg, color: roleStyle.text } : undefined}
     >
