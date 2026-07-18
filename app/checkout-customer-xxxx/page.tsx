@@ -12,11 +12,11 @@ export default function CustomerXxxxCheckoutPage() {
     <div className="bg-slate-50 pb-24">
       <div className="mx-auto max-w-7xl px-6 py-12">
         <Link
-          href="/#payment-flows"
+          href="/checkout"
           className="mb-8 inline-flex items-center gap-1.5 text-sm text-slate-500 transition hover:text-cellulant-blue"
         >
           <ArrowLeft className="h-4 w-4" />
-          All services
+          Back to Checkout
         </Link>
 
         <div className="mb-2">

@@ -174,3 +174,14 @@ export const customerXxxxCheckout: SequenceDiagramData = {
     },
   ],
 };
+
+export interface CustomerImplementationLink {
+  name: string;
+  href: string;
+}
+
+// Real-customer technical diagrams, linked from their owning service's page
+// (see app/[service]/page.tsx) rather than listed on the home page grid.
+export const customerImplementationsByServiceSlug: Record<string, CustomerImplementationLink[]> = {
+  checkout: [{ name: 'Customer XXXX', href: '/checkout-customer-xxxx' }],
+};

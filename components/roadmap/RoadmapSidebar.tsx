@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { Check } from 'lucide-react';
+import { Check, ArrowUpRight } from 'lucide-react';
 import { services, type ServiceDefinition } from '@/data/services';
+import { customerImplementationsByServiceSlug } from '@/lib/sequence-diagram';
 
 const LEGEND: Array<{ color: string; label: string }> = [
   { color: '#FFEB00', label: 'Customer / merchant-facing step' },
@@ -12,9 +13,31 @@ const LEGEND: Array<{ color: string; label: string }> = [
 
 export function RoadmapSidebar({ service }: { service: ServiceDefinition }) {
   const related = services.filter((s) => s.slug !== service.slug);
+  const customerImplementations = customerImplementationsByServiceSlug[service.slug] ?? [];
 
   return (
     <div className="flex flex-col gap-5">
+      {customerImplementations.length > 0 && (
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            Customer implementations
+          </p>
+          <ul className="space-y-2">
+            {customerImplementations.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-cellulant-blue"
+                >
+                  <ArrowUpRight className="h-3.5 w-3.5 text-slate-300" />
+                  {item.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
           What the colors mean
