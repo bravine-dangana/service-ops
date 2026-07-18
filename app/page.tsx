@@ -1,11 +1,14 @@
 import { services } from '@/data/services';
 import { FeaturedItems } from '@/components/site/FeaturedItems';
 
-const paymentFlows = services.map((service) => ({
-  text: service.name,
-  href: `/${service.slug}`,
-  isNew: service.isExample,
-}));
+const paymentFlows = [
+  ...services.map((service) => ({
+    text: service.name,
+    href: `/${service.slug}`,
+    isNew: service.isExample,
+  })),
+  { text: 'Checkout — Customer XXXX', href: '/checkout-customer-xxxx', isNew: true },
+];
 
 const platformItems = [
   { text: 'Global API Payouts', href: '#', isUpcoming: true },

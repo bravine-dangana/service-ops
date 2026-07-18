@@ -18,6 +18,8 @@ export interface SequenceMessage {
   icon?: SystemIcon;
   /** Self-referential step (from === to) rendered as a note box on the lifeline. */
   self?: boolean;
+  /** Plain-language explanation shown in the side panel when this step is clicked. */
+  detail?: string;
 }
 
 export interface SequenceAnnotation {
@@ -32,6 +34,8 @@ export interface SequenceDiagramData {
   actors: SequenceActor[];
   messages: SequenceMessage[];
   annotations: SequenceAnnotation[];
+  /** Label for the animated "run the flow" button, placed under the first actor. */
+  initiateLabel?: string;
 }
 
 const COLUMN_WIDTH = 150;
@@ -65,6 +69,7 @@ export function layoutSequenceDiagram(data: SequenceDiagramData) {
 // where the source image was too small to read with full confidence.
 export const customerXxxxCheckout: SequenceDiagramData = {
   title: 'Customer XXXX — Checkout charge flow',
+  initiateLabel: 'Initiate Payment',
   actors: [
     { id: 'sub-airtel', label: 'Airtel Subscriber', kind: 'person', color: '#f472b6' },
     { id: 'airtel', label: 'Airtel', kind: 'service', color: '#DC2626' },
@@ -79,8 +84,20 @@ export const customerXxxxCheckout: SequenceDiagramData = {
     { id: 'sub-mpesa', label: 'M-Pesa Subscriber', kind: 'person', color: '#a78bfa' },
   ],
   messages: [
-    { id: 'm1', from: 'sub-airtel', to: 'airtel', label: 'Checkout' },
-    { id: 'm2', from: 'airtel', to: 'airtel-api', label: 'Initiate Charge Request' },
+    {
+      id: 'm1',
+      from: 'sub-airtel',
+      to: 'airtel',
+      label: 'Checkout',
+      detail: "The subscriber begins a purchase and chooses to pay via Airtel Money.",
+    },
+    {
+      id: 'm2',
+      from: 'airtel',
+      to: 'airtel-api',
+      label: 'Initiate Charge Request',
+      detail: "Airtel forwards the subscriber's payment request to Cellulant's airtel-api.",
+    },
     {
       id: 'm3',
       from: 'airtel-api',
@@ -88,16 +105,78 @@ export const customerXxxxCheckout: SequenceDiagramData = {
       label: 'Publish Charge Request',
       icon: 'queue',
       note: 'RabbitMQ: v3-charge-airtel-phoenix-queue',
+      detail: 'airtel-api publishes the charge request onto a RabbitMQ queue for asynchronous processing.',
     },
-    { id: 'm4', from: 'charge-consumer', to: 'airtel-api', label: 'Response to Airtel', style: 'dashed' },
-    { id: 'm5', from: 'airtel-api', to: 'charge', label: 'Raise Charge Request' },
-    { id: 'm6', from: 'charge', to: 'mno', label: 'Charge Request to MNO' },
-    { id: 'm7', from: 'mno', to: 'mpesa-gateway', label: 'STK Push', style: 'dashed' },
-    { id: 'm8', from: 'mpesa-gateway', to: 'sub-mpesa', label: 'Authorize' },
-    { id: 'm9', from: 'mno', to: 'mno', label: 'Validate Balance, Debit Wallet', self: true },
-    { id: 'm10', from: 'mno', to: 'charge', label: 'Callback', style: 'dashed' },
-    { id: 'm11', from: 'charge', to: 'core', label: 'Log Payment to Tingg', style: 'dashed' },
-    { id: 'm12', from: 'core', to: 'core', label: 'Log to Charge DB', self: true, icon: 'database' },
+    {
+      id: 'm4',
+      from: 'charge-consumer',
+      to: 'airtel-api',
+      label: 'Response to Airtel',
+      style: 'dashed',
+      detail: "The consumer acknowledges the queued request back to Airtel so the subscriber isn't left waiting.",
+    },
+    {
+      id: 'm5',
+      from: 'airtel-api',
+      to: 'charge',
+      label: 'Raise Charge Request',
+      detail: "airtel-api raises the actual charge request with Cellulant's Charge service.",
+    },
+    {
+      id: 'm6',
+      from: 'charge',
+      to: 'mno',
+      label: 'Charge Request to MNO',
+      detail: 'Charge forwards the request to the Mobile Network Operator (MNO) to debit the subscriber.',
+    },
+    {
+      id: 'm7',
+      from: 'mno',
+      to: 'mpesa-gateway',
+      label: 'STK Push',
+      style: 'dashed',
+      detail: "The MNO pushes an authorization prompt to the subscriber's phone.",
+    },
+    {
+      id: 'm8',
+      from: 'mpesa-gateway',
+      to: 'sub-mpesa',
+      label: 'Authorize',
+      detail: 'The subscriber authorizes the transaction on their handset.',
+    },
+    {
+      id: 'm9',
+      from: 'mno',
+      to: 'mno',
+      label: 'Validate Balance, Debit Wallet',
+      self: true,
+      detail: 'The MNO checks the subscriber has sufficient balance and debits their wallet.',
+    },
+    {
+      id: 'm10',
+      from: 'mno',
+      to: 'charge',
+      label: 'Callback',
+      style: 'dashed',
+      detail: 'The MNO calls back to Charge with the result of the debit.',
+    },
+    {
+      id: 'm11',
+      from: 'charge',
+      to: 'core',
+      label: 'Log Payment to Tingg',
+      style: 'dashed',
+      detail: 'Charge forwards the payment result to Core for logging against the Tingg platform.',
+    },
+    {
+      id: 'm12',
+      from: 'core',
+      to: 'core',
+      label: 'Log to Charge DB',
+      self: true,
+      icon: 'database',
+      detail: 'Core writes the transaction record to the Charge database.',
+    },
     {
       id: 'm13',
       from: 'charge',
@@ -106,8 +185,16 @@ export const customerXxxxCheckout: SequenceDiagramData = {
       style: 'dashed',
       icon: 'queue',
       note: 'RabbitMQ: charge-merchant-notification',
+      detail: 'Charge publishes a merchant-notification event onto a second RabbitMQ queue.',
     },
-    { id: 'm14', from: 'airtel-poller', to: 'airtel-poller', label: 'Validation', self: true },
+    {
+      id: 'm14',
+      from: 'airtel-poller',
+      to: 'airtel-poller',
+      label: 'Validation',
+      self: true,
+      detail: "The poller validates the charge before it's treated as final.",
+    },
     {
       id: 'm15',
       from: 'airtel-poller',
@@ -115,12 +202,46 @@ export const customerXxxxCheckout: SequenceDiagramData = {
       label: 'Validation Failed',
       style: 'dashed',
       note: 'Routed to charge/refund',
+      detail: 'If validation fails, the event is routed to the refund consumer instead.',
     },
-    { id: 'm16', from: 'airtel-poller', to: 'airtel-poller', label: 'Validation Passed', self: true },
-    { id: 'm17', from: 'airtel-poller', to: 'airtel', label: 'Send Callback to Airtel' },
-    { id: 'm18', from: 'sub-airtel', to: 'airtel', label: 'Query Status Request' },
-    { id: 'm19', from: 'airtel', to: 'airtel-poller', label: 'Query Cache', icon: 'cache' },
-    { id: 'm20', from: 'airtel-poller', to: 'airtel', label: 'Query Status', style: 'dashed' },
+    {
+      id: 'm16',
+      from: 'airtel-poller',
+      to: 'airtel-poller',
+      label: 'Validation Passed',
+      self: true,
+      detail: 'If validation passes, the flow continues on to notify the merchant.',
+    },
+    {
+      id: 'm17',
+      from: 'airtel-poller',
+      to: 'airtel',
+      label: 'Send Callback to Airtel',
+      detail: 'The poller sends the final callback back to Airtel.',
+    },
+    {
+      id: 'm18',
+      from: 'sub-airtel',
+      to: 'airtel',
+      label: 'Query Status Request',
+      detail: 'The subscriber (or Airtel on their behalf) asks for the current status of the transaction.',
+    },
+    {
+      id: 'm19',
+      from: 'airtel',
+      to: 'airtel-poller',
+      label: 'Query Cache',
+      icon: 'cache',
+      detail: "Airtel checks a cache first, since it's faster than querying the database directly.",
+    },
+    {
+      id: 'm20',
+      from: 'airtel-poller',
+      to: 'airtel',
+      label: 'Query Status',
+      style: 'dashed',
+      detail: 'The cache returns whatever status it currently holds.',
+    },
     {
       id: 'm21',
       from: 'airtel',
@@ -128,18 +249,49 @@ export const customerXxxxCheckout: SequenceDiagramData = {
       label: 'Query Status Response (Status 176/130)',
       style: 'dashed',
       note: 'Cache record exists',
+      detail: 'If the cache has the record, Airtel returns the status immediately.',
     },
-    { id: 'm22', from: 'airtel', to: 'charge', label: 'Route Query Status to Charge', note: 'Cache record does not exist' },
-    { id: 'm23', from: 'charge', to: 'charge', label: 'Query Charge DB', self: true, icon: 'database' },
-    { id: 'm24', from: 'charge', to: 'airtel', label: 'Charge Query Status Response', style: 'dashed' },
+    {
+      id: 'm22',
+      from: 'airtel',
+      to: 'charge',
+      label: 'Route Query Status to Charge',
+      note: 'Cache record does not exist',
+      detail: "If the cache doesn't have the record yet, the request is routed to Charge instead.",
+    },
+    {
+      id: 'm23',
+      from: 'charge',
+      to: 'charge',
+      label: 'Query Charge DB',
+      self: true,
+      icon: 'database',
+      detail: 'Charge looks up the authoritative transaction status directly from its database.',
+    },
+    {
+      id: 'm24',
+      from: 'charge',
+      to: 'airtel',
+      label: 'Charge Query Status Response',
+      style: 'dashed',
+      detail: 'Charge returns the status it found back to Airtel.',
+    },
     {
       id: 'm25',
       from: 'airtel',
       to: 'sub-airtel',
       label: 'Query Status Response (Status 176/130)',
       style: 'dashed',
+      detail: 'Airtel passes that status back to the subscriber.',
     },
-    { id: 'm26', from: 'sub-airtel', to: 'sub-airtel', label: 'Airtel Issues Service', self: true },
+    {
+      id: 'm26',
+      from: 'sub-airtel',
+      to: 'sub-airtel',
+      label: 'Airtel Issues Service',
+      self: true,
+      detail: 'Once a successful status is confirmed, Airtel fulfills the request — completing the transaction.',
+    },
   ],
   annotations: [
     {
