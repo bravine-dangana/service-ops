@@ -123,7 +123,7 @@ export function SequenceDiagram({ data }: { data: SequenceDiagramData }) {
             </button>
 
             {/* lifelines + message arrows */}
-            <svg className="absolute left-0 top-0" width={width} height={height}>
+            <svg className="pointer-events-none absolute left-0 top-0" width={width} height={height}>
               <defs>
                 <marker id="arrow-solid" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
                   <path d="M0,0 L8,4 L0,8 Z" fill="#334155" />

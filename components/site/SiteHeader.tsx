@@ -6,7 +6,7 @@ import { Menu, X, LogIn } from 'lucide-react';
 import { Logo } from './Logo';
 
 const NAV_LINKS = [
-  { text: 'Payment Flows', href: '/#payment-flows' },
+  { text: 'Payment Flows', href: '/payment-flows' },
   { text: 'Platform & Infrastructure', href: '/#platform' },
 ];
 
