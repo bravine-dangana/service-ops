@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  color-scheme: dark;
+}
+
+@layer utilities {
+  .container {
+    @apply mx-auto max-w-[830px] px-4;
+  }
+}
+
+::selection {
+  background-color: rgba(0, 158, 218, 0.35);
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #009eda;
+  border-radius: 9999px;
+}
