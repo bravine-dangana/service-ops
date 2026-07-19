@@ -14,7 +14,7 @@ const ICONS: Record<SystemIcon, typeof Workflow> = {
 };
 
 const STEP_DURATION_MS = 700;
-const MIN_ZOOM = 0.5;
+const MIN_ZOOM = 0.3;
 const MAX_ZOOM = 1.5;
 
 export function SequenceDiagram({ data }: { data: SequenceDiagramData }) {
@@ -25,12 +25,25 @@ export function SequenceDiagram({ data }: { data: SequenceDiagramData }) {
   const [playing, setPlaying] = useState(false);
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, []);
+
+  // Fit the diagram to the visible width on first render, so it doesn't need
+  // horizontal scrolling by default. Manual zoom controls still work afterward.
+  useEffect(() => {
+    const el = viewportRef.current;
+    if (!el) return;
+    const available = el.clientWidth;
+    if (available > 0 && width > available) {
+      setZoom(Math.max(MIN_ZOOM, +(available / width).toFixed(2)));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [width]);
 
   function play() {
     if (playing) return;
@@ -85,13 +98,25 @@ export function SequenceDiagram({ data }: { data: SequenceDiagramData }) {
           type="button"
           onClick={() => setZoom(1)}
           className="flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-900"
-          aria-label="Reset zoom"
+          aria-label="Reset zoom to 100%"
         >
           <RotateCcw className="h-3.5 w-3.5" />
         </button>
+        <button
+          type="button"
+          onClick={() => {
+            const el = viewportRef.current;
+            if (!el) return;
+            const available = el.clientWidth;
+            setZoom(available > 0 ? Math.max(MIN_ZOOM, +(available / width).toFixed(2)) : 1);
+          }}
+          className="ml-1 rounded-md border border-slate-200 px-2 py-1 text-xs font-medium text-slate-500 hover:border-slate-300 hover:text-slate-900"
+        >
+          Fit to screen
+        </button>
       </div>
 
-      <div className="w-full overflow-auto">
+      <div ref={viewportRef} className="w-full overflow-auto">
         <div style={{ width: width * zoom, height: height * zoom }}>
           <div
             className="relative origin-top-left"
