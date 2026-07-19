@@ -6,6 +6,8 @@ export interface SequenceActor {
   label: string;
   kind: ActorKind;
   color: string;
+  /** Text color for the header box; defaults to white if unset. */
+  textColor?: string;
 }
 
 export interface SequenceMessage {
@@ -40,7 +42,7 @@ export interface SequenceDiagramData {
 
 const COLUMN_WIDTH = 150;
 const LEFT_PADDING = 70;
-const HEADER_HEIGHT = 110;
+const HEADER_HEIGHT = 132;
 const ROW_HEIGHT = 46;
 const BOTTOM_PADDING = 50;
 
@@ -70,18 +72,22 @@ export function layoutSequenceDiagram(data: SequenceDiagramData) {
 export const customerXxxxCheckout: SequenceDiagramData = {
   title: 'Customer XXXX — Checkout charge flow',
   initiateLabel: 'Initiate Payment',
+  // Colors follow the Cellulant brandkit palette, grouped by role rather than one
+  // loud color per box: subscribers = Cellulant Navy, Airtel-side services =
+  // Cellulant Blue, Cellulant's own core services = Cellulant Purple, external
+  // MNO/network = Cellulant Mustard (dark text, since it's a light fill).
   actors: [
-    { id: 'sub-airtel', label: 'Airtel Subscriber', kind: 'person', color: '#f472b6' },
-    { id: 'airtel', label: 'Airtel', kind: 'service', color: '#DC2626' },
-    { id: 'airtel-api', label: 'airtel-api', kind: 'service', color: '#2563EB' },
-    { id: 'charge-consumer', label: 'chargephoenix-airtel-consumer', kind: 'service', color: '#2563EB' },
-    { id: 'airtel-poller', label: 'v3-phoenix-airtel-poller', kind: 'service', color: '#2563EB' },
-    { id: 'refund-consumer', label: 'v3-phoenix-refund-consumer', kind: 'service', color: '#2563EB' },
-    { id: 'charge', label: 'Charge', kind: 'service', color: '#B91C1C' },
-    { id: 'core', label: 'Core', kind: 'service', color: '#B91C1C' },
-    { id: 'mno', label: 'MNO', kind: 'service', color: '#0D9488' },
-    { id: 'mpesa-gateway', label: 'M-Pesa Gateway', kind: 'cloud', color: '#0EA5E9' },
-    { id: 'sub-mpesa', label: 'M-Pesa Subscriber', kind: 'person', color: '#a78bfa' },
+    { id: 'sub-airtel', label: 'Airtel Subscriber', kind: 'person', color: '#005BA0' },
+    { id: 'airtel', label: 'Airtel', kind: 'service', color: '#009EDA' },
+    { id: 'airtel-api', label: 'airtel-api', kind: 'service', color: '#009EDA' },
+    { id: 'charge-consumer', label: 'chargephoenix-airtel-consumer', kind: 'service', color: '#009EDA' },
+    { id: 'airtel-poller', label: 'v3-phoenix-airtel-poller', kind: 'service', color: '#009EDA' },
+    { id: 'refund-consumer', label: 'v3-phoenix-refund-consumer', kind: 'service', color: '#009EDA' },
+    { id: 'charge', label: 'Charge', kind: 'service', color: '#7030A0' },
+    { id: 'core', label: 'Core', kind: 'service', color: '#7030A0' },
+    { id: 'mno', label: 'MNO', kind: 'service', color: '#FFBE1A', textColor: '#1f2937' },
+    { id: 'mpesa-gateway', label: 'M-Pesa Gateway', kind: 'cloud', color: '#FFBE1A', textColor: '#1f2937' },
+    { id: 'sub-mpesa', label: 'M-Pesa Subscriber', kind: 'person', color: '#005BA0' },
   ],
   messages: [
     {

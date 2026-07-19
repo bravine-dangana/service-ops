@@ -138,8 +138,8 @@ export function SequenceDiagram({ data }: { data: SequenceDiagramData }) {
               type="button"
               onClick={play}
               disabled={playing}
-              className="absolute -translate-x-1/2 whitespace-nowrap rounded-full bg-cellulant-blue px-3 py-1 text-[11px] font-semibold text-white shadow transition hover:bg-cellulant-navy disabled:cursor-not-allowed disabled:opacity-60"
-              style={{ left: actorX.get(firstActorId), top: headerHeight - 22 }}
+              className="absolute z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-cellulant-blue px-3 py-1 text-[11px] font-semibold text-white shadow transition hover:bg-cellulant-navy disabled:cursor-not-allowed disabled:opacity-60"
+              style={{ left: actorX.get(firstActorId), top: 66 }}
             >
               <span className="inline-flex items-center gap-1">
                 <Play className="h-3 w-3" />
