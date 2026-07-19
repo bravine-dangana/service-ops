@@ -49,16 +49,21 @@ export function SequenceDiagram({ data }: { data: SequenceDiagramData }) {
     if (playing) return;
     setPlaying(true);
     setActiveIndex(0);
+    setSelectedMessageId(data.messages[0]?.id ?? null);
     let step = 0;
     intervalRef.current = setInterval(() => {
       step += 1;
       if (step >= data.messages.length) {
         if (intervalRef.current) clearInterval(intervalRef.current);
         setPlaying(false);
-        setTimeout(() => setActiveIndex(null), 1200);
+        setTimeout(() => {
+          setActiveIndex(null);
+          setSelectedMessageId(null);
+        }, 1800);
         return;
       }
       setActiveIndex(step);
+      setSelectedMessageId(data.messages[step].id);
     }, STEP_DURATION_MS);
   }
 
