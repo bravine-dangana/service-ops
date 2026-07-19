@@ -24,12 +24,11 @@ export default function HomePage() {
             Welcome to Service Ops
           </h1>
           <p className="hidden px-4 text-lg text-slate-300 sm:block">
-            <span className="font-medium text-white">Service Ops</span> is Cellulant&rsquo;s
-            interactive knowledge base of payment services — see the journey of a transaction
-            visually, click any step, and understand what happens there.
+            Your visual guide to how Cellulant&rsquo;s services work. Explore each product, follow
+            a transaction step by step, and understand exactly what happens behind every payment.
           </p>
           <p className="text-md block px-0 text-slate-300 sm:hidden">
-            An interactive knowledge base of Cellulant&rsquo;s payment services.
+            Your visual guide to how Cellulant&rsquo;s services work.
           </p>
         </div>
       </div>
