@@ -310,7 +310,3 @@ export const services: ServiceDefinition[] = [
     ],
   },
 ];
-
-export function getServiceBySlug(slug: string): ServiceDefinition | undefined {
-  return services.find((service) => service.slug === slug);
-}

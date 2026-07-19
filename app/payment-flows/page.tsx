@@ -1,21 +1,20 @@
-import { services } from '@/data/services';
-import { customerImplementationsByServiceSlug } from '@/lib/sequence-diagram';
+import { getAllCustomerFlows } from '@/lib/queries';
 import { FeaturedItems } from '@/components/site/FeaturedItems';
-
-const items = services.flatMap((service) => {
-  const implementations = customerImplementationsByServiceSlug[service.slug] ?? [];
-  return implementations.map((implementation) => ({
-    text: `${service.name} — ${implementation.name}`,
-    href: implementation.href,
-    isNew: true,
-  }));
-});
 
 export const metadata = {
   title: 'Payment Flows · Service Ops Platform',
 };
 
-export default function PaymentFlowsPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function PaymentFlowsPage() {
+  const flows = await getAllCustomerFlows();
+  const items = flows.map((flow) => ({
+    text: `${flow.serviceName} — ${flow.name}`,
+    href: `/payment-flows/${flow.slug}`,
+    isNew: true,
+  }));
+
   return (
     <div className="min-h-[70vh] bg-gradient-to-b from-cellulant-dark2 to-cellulant-dark pb-16">
       <div className="relative border-b border-white/10 py-14">

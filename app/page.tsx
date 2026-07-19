@@ -1,11 +1,5 @@
-import { services } from '@/data/services';
+import { getAllServices } from '@/lib/queries';
 import { FeaturedItems } from '@/components/site/FeaturedItems';
-
-const serviceItems = services.map((service) => ({
-  text: service.name,
-  href: `/${service.slug}`,
-  isNew: service.isExample,
-}));
 
 const platformItems = [
   { text: 'Global API Payouts', href: '#', isUpcoming: true },
@@ -15,7 +9,16 @@ const platformItems = [
   { text: 'Infrastructure', href: '#', isUpcoming: true },
 ];
 
-export default function HomePage() {
+export const dynamic = 'force-dynamic';
+
+export default async function HomePage() {
+  const services = await getAllServices();
+  const serviceItems = services.map((service) => ({
+    text: service.name,
+    href: `/${service.slug}`,
+    isNew: service.isExample,
+  }));
+
   return (
     <div className="bg-gradient-to-b from-cellulant-dark2 to-cellulant-dark">
       <div className="relative min-h-[192px] border-b border-white/10 transition-all sm:min-h-[281px]">

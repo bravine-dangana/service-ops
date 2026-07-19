@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, LogIn } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
+import { Menu, X, LogIn, ShieldCheck, LogOut } from 'lucide-react';
 import { Logo } from './Logo';
 
 const NAV_LINKS = [
@@ -12,6 +13,9 @@ const NAV_LINKS = [
 
 export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { data: session, status } = useSession();
+  const isAuthed = status === 'authenticated';
+  const isAdmin = session?.user?.role === 'admin';
 
   return (
     <div className="sticky top-0 z-30 px-4 pt-4">
@@ -31,13 +35,35 @@ export function SiteHeader() {
           </div>
         </div>
 
-        <a
-          href="#"
-          className="hidden h-9 items-center gap-2 rounded-full bg-cellulant-blue px-4 text-sm font-medium text-white transition hover:bg-cellulant-navy sm:flex"
-        >
-          <LogIn className="h-3.5 w-3.5" />
-          Sign In
-        </a>
+        <div className="hidden items-center gap-3 sm:flex">
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="flex items-center gap-1.5 text-sm font-medium text-slate-300 hover:text-white"
+            >
+              <ShieldCheck className="h-3.5 w-3.5" />
+              Admin
+            </Link>
+          )}
+          {isAuthed ? (
+            <button
+              type="button"
+              onClick={() => signOut({ callbackUrl: '/' })}
+              className="flex h-9 items-center gap-2 rounded-full border border-white/15 px-4 text-sm font-medium text-slate-300 transition hover:border-white/25 hover:text-white"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              Sign out
+            </button>
+          ) : (
+            <Link
+              href="/signin"
+              className="flex h-9 items-center gap-2 rounded-full bg-cellulant-blue px-4 text-sm font-medium text-white transition hover:bg-cellulant-navy"
+            >
+              <LogIn className="h-3.5 w-3.5" />
+              Sign In
+            </Link>
+          )}
+        </div>
 
         <button
           type="button"
@@ -79,14 +105,38 @@ export function SiteHeader() {
                   </a>
                 </li>
               ))}
+              {isAdmin && (
+                <li>
+                  <Link
+                    href="/admin"
+                    className="text-xl font-medium text-white hover:text-cellulant-blue"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Admin
+                  </Link>
+                </li>
+              )}
               <li>
-                <a
-                  href="#"
-                  className="text-xl font-medium text-cellulant-blue"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Sign In
-                </a>
+                {isAuthed ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      signOut({ callbackUrl: '/' });
+                    }}
+                    className="text-xl font-medium text-cellulant-blue"
+                  >
+                    Sign out
+                  </button>
+                ) : (
+                  <Link
+                    href="/signin"
+                    className="text-xl font-medium text-cellulant-blue"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                )}
               </li>
             </ul>
           </div>

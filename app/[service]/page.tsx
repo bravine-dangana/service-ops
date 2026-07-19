@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { services, getServiceBySlug } from '@/data/services';
+import { getAllServices, getServiceBySlugDb, getCustomerFlowsForService } from '@/lib/queries';
 import { ServiceIcon } from '@/components/ServiceIcon';
 import { RoadmapCanvas } from '@/components/roadmap/RoadmapCanvas';
 import { RoadmapSidebar } from '@/components/roadmap/RoadmapSidebar';
@@ -9,21 +9,28 @@ import { ShareIcons } from '@/components/roadmap/ShareIcons';
 import { InfoAccordion } from '@/components/roadmap/InfoAccordion';
 import { FloatingAssistantBar } from '@/components/roadmap/FloatingAssistantBar';
 
-export function generateStaticParams() {
-  return services.map((service) => ({ service: service.slug }));
-}
+export const dynamic = 'force-dynamic';
 
-export function generateMetadata({ params }: { params: { service: string } }) {
-  const service = getServiceBySlug(params.service);
+export async function generateMetadata({ params }: { params: { service: string } }) {
+  const service = await getServiceBySlugDb(params.service);
   return { title: service ? `${service.name} · Service Ops Platform` : 'Service Ops Platform' };
 }
 
-export default function ServiceFlowPage({ params }: { params: { service: string } }) {
-  const service = getServiceBySlug(params.service);
+export default async function ServiceFlowPage({ params }: { params: { service: string } }) {
+  const service = await getServiceBySlugDb(params.service);
 
   if (!service) {
     notFound();
   }
+
+  const [allServices, customerFlows] = await Promise.all([
+    getAllServices(),
+    getCustomerFlowsForService(service.slug),
+  ]);
+  const relatedServices = allServices
+    .filter((s) => s.slug !== service.slug)
+    .map((s) => ({ slug: s.slug, name: s.name }));
+  const customerImplementations = customerFlows.map((flow) => ({ slug: flow.slug, name: flow.name }));
 
   return (
     <div className="bg-slate-50 pb-24">
@@ -57,7 +64,10 @@ export default function ServiceFlowPage({ params }: { params: { service: string 
           </div>
 
           <div className="w-full shrink-0 lg:sticky lg:top-24 lg:h-fit lg:w-64">
-            <RoadmapSidebar service={service} />
+            <RoadmapSidebar
+              relatedServices={relatedServices}
+              customerImplementations={customerImplementations}
+            />
           </div>
 
           <div className="min-w-0 flex-1">

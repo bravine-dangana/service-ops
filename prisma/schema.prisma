@@ -1,0 +1,58 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// role: "admin" | "viewer"
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  role         String   @default("viewer")
+  createdAt    DateTime @default(now())
+}
+
+model Service {
+  slug        String   @id
+  name        String
+  tagline     String
+  description String
+  accent      String
+  icon        String
+  isExample   Boolean  @default(false)
+  order       Int      @default(0)
+  steps       Step[]
+  customerFlows CustomerFlow[]
+}
+
+// status: "draft" | "reviewed"
+// role: "customer" | "external" | "cellulant" | "success" | "failure"
+model Step {
+  id          String  @id
+  serviceSlug String
+  service     Service @relation(fields: [serviceSlug], references: [slug], onDelete: Cascade)
+  order       Int
+  title       String
+  explanation String
+  status      String  @default("draft")
+  role        String
+}
+
+// dataJson holds the serialized SequenceDiagramData (actors/messages/annotations) —
+// stored as a JSON blob rather than fully normalized tables, to keep the schema and
+// admin editor simple for now. See lib/sequence-diagram.ts for the shape.
+model CustomerFlow {
+  id          String   @id @default(cuid())
+  serviceSlug String
+  service     Service  @relation(fields: [serviceSlug], references: [slug], onDelete: Cascade)
+  name        String
+  slug        String   @unique
+  dataJson    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
